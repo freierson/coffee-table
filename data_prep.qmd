@@ -77,7 +77,8 @@ patterns_classifier <- list(
   Floral = '(?i)(floral|flower)',
   Fermented = '(?i)ferment',
   Complex = '(?i)(complex|complicated)',
-  Juicy = '(?i)juic(e|y)'
+  Juicy = '(?i)juic(e|y)',
+  Bitter = '(?i)bitter'
 )
 ```
 

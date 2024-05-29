@@ -59,6 +59,14 @@ table_data <- read_csv("table_data.csv") |>
   flex-direction: row;
   justify-content: flex-start;
 }
+
+.up {
+  color: #e00000;
+}
+.down {
+  color: #008000;
+}
+
 .description-container {
   display: flex;
   flex-direction: row;
@@ -105,6 +113,12 @@ bean_header <- JS("
     }
 
     return `<div class = 'bean-header-container'><span class = 'bean-header-flag' data-tippy-content = '${country_label}'>${flag}</span><img src='https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
+  }
+")
+
+up_down_arrow <- JS("
+  function(cellInfo, tableState) {
+    return `${cellInfo.value}<span>${cellInfo.value <= 0 ? '&#x25BC;' : '&#x25B2;'}</span>`;
   }
 ")
 ```
@@ -188,24 +202,22 @@ reactable(
     bitterness = colDef(
       name = "Bitterness",
       style = \(x) list(fontWeight = 600),
-      cell = JS("
-        function(cellInfo, tableState) {
-          // const down = '<i class=\'fa-solid fa-caret-down\'></i>';
-          // const up = '<i class=\'fa-solid fa-caret-up\'></i>';
-          return `${cellInfo.value}${cellInfo.value <= 0 ? 'up' : 'down'}`;
-        }
-      "),
+      cell = up_down_arrow,
       html = TRUE
     ),
     acidity = colDef(
       name = "Acidity",
-      style = \(x) list(fontWeight = 600)
+      style = \(x) list(fontWeight = 600),
+      cell = up_down_arrow,
+      html = TRUE
     ),
     mentioned_with = colDef(name = "Complimentary note", width = 150),
     sentiment = colDef(
       name = "Sentiment",
       format = colFormat(digits = 2),
-      style = color_pos_neg
+      style = color_pos_neg,
+      cell = up_down_arrow,
+      html = TRUE
     ))
 )
 ```
