@@ -162,8 +162,7 @@ mentioned_with <- inner_join(notes |>
 avg_expertise <- notes |>
   group_by(note) |>
   drop_na(expertise, coffee) |>
-  summarise(avg_expertise = mean(expertise, na.rm = T),
-            n = n(), .groups='drop') |>
+  summarise(avg_expertise = mean(expertise, na.rm = T), .groups='drop') |>
   arrange(avg_expertise)
 ```
 
@@ -219,9 +218,26 @@ prop_table |>
   left_join(most_often, by = join_by(note)) |>
   left_join(mentioned_with, by = join_by(note)) |>
   left_join(note_associations, by = join_by(note)) |>
+  left_join(avg_expertise, by = join_by(note)) |>
   select(-ends_with('_n')) |>
+  mutate(
+    most_often1 = case_when(
+      substr(most_often,1,1)=='a' ~ 'Kenyan coffee with a light roast',
+      substr(most_often,1,1)=='b' ~ 'Kenyan coffee with a medium roast',
+      substr(most_often,1,1)=='c' ~ 'Kenyan coffee with a dark roast',
+      substr(most_often,1,1)=='d' ~ 'Columbian coffee',
+    ),
+    most_often2 = case_when(
+      substr(most_often,4,4)=='a' ~ ' or the Kenyan coffee with a light roast',
+      substr(most_often,4,4)=='b' ~ ' or the Kenyan coffee with a medium roast',
+      substr(most_often,4,4)=='c' ~ ' or the Kenyan coffee with a dark roast',
+      substr(most_often,4,4)=='d' ~ ' or the Columbian coffee',
+      T ~ ''
+    ),
+    description = glue::glue('
+    {note} was used as a flavour note {N} times. This note was used when the coffee was experienced as {ifelse(bitterness<0,"less","more")} bitter ({format(round(bitterness,2),nsmall=2,trim=T)}), {ifelse(acidity<0,"less","more")} acidic ({format(round(acidity,2),nsmall=2,trim=T)}), and {ifelse(sentiment<0,"less","more")} enjoyable ({format(round(sentiment,2),nsmall=2,trim=T)}). The flavour note was commonly mentioned along with "{mentioned_with}". Among the coffees in the kit the note was most commonly used to describe the {most_often1}{most_often2}.')
+  ) |>
   write_csv("table_data.csv")
 ```
-
 
 
