@@ -81,8 +81,6 @@ patterns_classifier <- list(
 )
 ```
 
-
-
 ```{r}
 for(note in names(patterns_classifier)) {
   coffee[paste0('note_a_', note)] <- str_detect(coffee$coffee_a_notes, pattern = patterns_classifier[[note]])
@@ -140,6 +138,8 @@ most_often <- expand_grid(
 ```
 
 ```{r}
+document_freq <- notes |>
+  count(note, coffee, name = 'doc_freq')
 mentioned_with <- inner_join(notes |>
              select(submission_number, coffee, note),
            notes |>
@@ -147,14 +147,15 @@ mentioned_with <- inner_join(notes |>
            by=join_by(submission_number, coffee), relationship = "many-to-many") |>
   filter(note.x != note.y) |>
   arrange(submission_number, coffee) |>
-  count(note.x, note.y) |>
+  count(note.x, note.y, coffee) |>
+  left_join(document_freq, by = join_by(note.y==note, coffee)) |>
+  group_by(note.x,note.y) |>
+  summarise(tfidf = mean(n / doc_freq), .groups='drop') |>
   group_by(note.x) |>
-  slice_max(n) |>
+  slice_max(tfidf) |>
   rename(note = note.x, mentioned_with = note.y) |>
-  group_by(note, n) |>
-  summarise(mentioned_with = paste0(unique(mentioned_with), collapse=', '),
-            .groups='drop') |>
-  select(-n)
+  select(note, mentioned_with, tfidf) |>
+  ungroup()
 ```
 
 ```{r}
