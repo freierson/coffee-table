@@ -143,12 +143,11 @@ cat("The following were various notes made about a coffee in a blind taste test.
 cat(paste0(notes$d[1:250,1,drop=T],' ', notes$d[1:250,2,drop=T]), sep='\n')
 ```
 
-
 ```{r}
-patterns_classifier <- paste(
+patterns_classifier <- list(
   fruit = "(?i)fruit.", 
   honey = "(?i)honey", 
-  apple = "(?i)apple", 
+  apple = "(?i)apple",
   choc = "(?i)choc",
   citrus = "(?i)citrus",
   sour = "(?i)sour",
@@ -158,14 +157,27 @@ patterns_classifier <- paste(
   smoky = '(?i)smok',
   balanced = '(?i)balanced',
   caramel = '(?i)caramel',
-  earthy = '(?i)earth'
+  earthy = '(?i)earth',
+  sweet = '(?i)sweet',
+  cherry = '(?i)(cherry|cherries)',
+  berry = '(?i)(berry|berries)',
+  floral = '(?i)floral',
+  fermented = '(?i)ferment',
+  complex = '(?i)(complex|complicated)',
+  blueberry = '(?i)blueberry',
+  raspberry = '(?i)raspberry',
+  juicy = '(?i)juicy'
 )
 ```
 
 ```{r}
-
+for(note in names(patterns_classifier)) {
+  coffee[paste0('note_a_', note)] <- str_detect(coffee$coffee_a_notes, pattern = patterns_classifier[[note]])
+  coffee[paste0('note_b_', note)] <- str_detect(coffee$coffee_b_notes, pattern = patterns_classifier[[note]])
+  coffee[paste0('note_c_', note)] <- str_detect(coffee$coffee_c_notes, pattern = patterns_classifier[[note]])
+  coffee[paste0('note_d_', note)] <- str_detect(coffee$coffee_d_notes, pattern = patterns_classifier[[note]])
+}
 ```
-
 
 ```{r}
 coffee |> 
@@ -173,13 +185,4 @@ coffee |>
   pivot_longer(everything(), names_to = 'variable', values_to = 'prop_not_missing') |>
   filter(prop_not_missing < .25)
 ```
-
-
-```{r}
-coffee |>
-  mutate(across(e))
-```
-
-
-
 
