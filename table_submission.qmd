@@ -145,6 +145,8 @@ color_pos_neg <- function(value) {
       }
 ```
 
+<script>let playSound = (x) => new Audio(x).play()</script>
+
 ```{r}
 #| column: screen-inset
 reactable(
@@ -159,7 +161,7 @@ reactable(
         class = "description-container",
         div(
           class = "card",
-          h2(table_data$note[index]),
+          div(span(table_data$note[index], style = "font-size: 2em;"), span("  🔊", style = "font-size: 1.2em; cursor: pointer", onclick = glue::glue("playSound('text-to-speech/{table_data$note[index]}.mp3')"))),
           p(table_data$description[index])
         )
       )
