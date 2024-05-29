@@ -7,15 +7,15 @@ title: "Table"
 library(tidyverse)
 library(reactable)
 library(reactablefmtr)
+library(htmltools)
 ```
 
-<script src='https://unpkg.com/popper.js@1'></script><script src='https://unpkg.com/tippy.js@5'></script>
+<script src='https://unpkg.com/popper.js@1'></script><script src='https://unpkg.com/tippy.js@5'></script><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" type="text/css" />
 
 ```{r}
 table_data <- read_csv("table_data.csv") |>
   rename(n = N, a_prop = a, b_prop = b, c_prop = c, d_prop = d) |>
-  select(-p.value) |>
-  select(note, sentiment,bitterness, acidity,mentioned_with,most_often,  a_prop, b_prop, c_prop, d_prop)
+  select(-p.value)
 ```
 
 
@@ -59,6 +59,29 @@ table_data <- read_csv("table_data.csv") |>
   flex-direction: row;
   justify-content: flex-start;
 }
+.description-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 30em;
+    text-align: center;
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 24px;
+}
+
+.card p {
+    font-size: 16px;
+    color: #666;
+}
 ```
 
 ```{r}
@@ -93,7 +116,7 @@ bean_cell_bars <- data_bars(
   text_position = "above",
   tooltip = TRUE,
   fill_color = "#804A26",
-  number_fmt = scales::label_number(accuracy = 0.01)
+  number_fmt = scales::label_percent(accuracy = 0.1)
 )
 ```
 
@@ -111,17 +134,23 @@ color_pos_neg <- function(value) {
 ```{r}
 #| column: screen-inset
 reactable(
-  table_data,
+  table_data |>
+    select(note, sentiment,bitterness, acidity,mentioned_with,most_often,  a_prop, b_prop, c_prop, d_prop),
   defaultColDef = colDef(format = colFormat(digits = 2)),
   pagination = FALSE,
   defaultPageSize = nrow(table_data),
-  details = JS("
-    function(colObj, tableState) {
-      console.log(colObj, tableState);
-
-      return `<div>What is Lorem Ipsum?<br/>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</div>`
-    }
-  "),
+  details = function(index, column_name){
+    return(tagList(
+      div(
+        class = "description-container",
+        div(
+          class = "card",
+          h2(table_data$note[index]),
+          p(table_data$description[index])
+        )
+      )
+    ))
+  },
   columns = list(
     note = colDef(name = "Coffee flavour note"),
     n = colDef(name = "Occurences", format = colFormat(digits = 0), width = 120),
@@ -156,8 +185,22 @@ reactable(
         }).join()
       }
     "), html = TRUE),
-    bitterness = colDef(name = "Bitterness", style = color_pos_neg),
-    acidity = colDef(name = "Acidity", style = color_pos_neg),
+    bitterness = colDef(
+      name = "Bitterness",
+      style = \(x) list(fontWeight = 600),
+      cell = JS("
+        function(cellInfo, tableState) {
+          // const down = '<i class=\'fa-solid fa-caret-down\'></i>';
+          // const up = '<i class=\'fa-solid fa-caret-up\'></i>';
+          return `${cellInfo.value}${cellInfo.value <= 0 ? 'up' : 'down'}`;
+        }
+      "),
+      html = TRUE
+    ),
+    acidity = colDef(
+      name = "Acidity",
+      style = \(x) list(fontWeight = 600)
+    ),
     mentioned_with = colDef(name = "Complimentary note", width = 150),
     sentiment = colDef(
       name = "Sentiment",
