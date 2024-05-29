@@ -145,7 +145,7 @@ cat(paste0(notes$d[1:250,1,drop=T],' ', notes$d[1:250,2,drop=T]), sep='\n')
 
 ```{r}
 patterns_classifier <- list(
-  fruit = "(?i)fruit.", 
+  fruit = "(?i)fruit", 
   honey = "(?i)honey", 
   apple = "(?i)apple",
   choc = "(?i)choc",
@@ -154,14 +154,14 @@ patterns_classifier <- list(
   nutty = "(?i)(nutty|nut)",
   smooth = "(?i)smooth",
   bright = "(?i)bright",
-  smoky = '(?i)smok',
+  smoky = '(?i)(smoky|smoke)',
   balanced = '(?i)balanced',
   caramel = '(?i)caramel',
   earthy = '(?i)earth',
   sweet = '(?i)sweet',
   cherry = '(?i)(cherry|cherries)',
   berry = '(?i)(berry|berries)',
-  floral = '(?i)floral',
+  floral = '(?i)(floral|flower)',
   fermented = '(?i)ferment',
   complex = '(?i)(complex|complicated)',
   blueberry = '(?i)blueberry',
@@ -169,6 +169,10 @@ patterns_classifier <- list(
   juicy = '(?i)juicy'
 )
 ```
+
+```{r}
+```
+
 
 ```{r}
 for(note in names(patterns_classifier)) {
