@@ -1,0 +1,66 @@
+---
+title: "Explore coffee dataset"
+---
+
+```{r}
+library(tidyverse)
+library(reactable)
+library(htmltools)
+```
+
+```{r}
+coffee_survey <- readr::read_csv('coffee_w_notes.csv')
+```
+
+```{r}
+table_data <- coffee_survey |> 
+    select(
+      submission_id, prefer_overall, expertise, strength, caffeine, roast_level, 
+      starts_with("note_")
+    ) |>
+    drop_na() |>
+    pivot_longer(starts_with("note_")) |>
+    separate(name, sep = "_", into = c("x_", "pod", "note")) |>
+    select(-x_) |>
+    filter(value == TRUE) |>
+    select(-value)
+```
+
+```{r}
+row_details <- function(index) {
+  print(table_data[index, ])
+  return(
+    reactable(
+      table_data[index, ]
+    )
+  )
+}
+```
+
+```{r}
+reactable(
+  table_data |> 
+    group_by(note, pod) |> nest() |> 
+    pivot_wider(values_from = "data", names_from = "pod") |> 
+    left_join(table_data |> count(note)) |>
+    select(note, n, a, b, c, d) ,
+  defaultColDef = colDef(headerClass = "header"),
+  columns = list(
+    a = colDef(
+      cell = JS(
+        'function(cellInfo) {
+          console.log(cellInfo);
+        }'
+      )
+    )
+  ),
+  details = row_details,
+  rowStyle = list(cursor = "pointer"),
+  theme = reactableTheme(cellPadding = "8px 12px")
+)
+```
+
+
+```{r}
+
+```
