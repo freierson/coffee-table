@@ -1,0 +1,14 @@
+---
+title: "Coffee Table"
+format: html
+---
+
+James Hoffman, a coffee expert and YouTuber ran a blind coffee taste test in October of 2023 that involved participants receiving coffee taste kits. The same kind of kenyan coffee bean was given at three levels of roast ([show icons here]). There was also a columbian coffee bean that went through a natural fermentation process. People were asked to record flavour notes for each coffee, rate them on bitterness (1-5), acidity (1-5), and general enjoyment (1-5). Our table aims to highlight what type of coffee each flavour note typically describes. To understand the table better, expand a flavour note to learn about it.
+
+[insert table]
+
+## Drop down
+
+[note] was used to describe one of the coffees in the test kit [sample_size] times. This note was used when the coffee was experienced as [less/more] bitter ([bitter rating]). This note was used when the coffee was experienced as [less/more] acidic ([acidic rating]). This note was used when the coffee was experienced as [less/more] enjoyable ([sentiment rating]). This flavour note was most often mentioned along with [note_complimentary], controlling for overall frequency. Among the coffees in the kit the word was most commonly used to describe the [Kenyan/Columbian] coffee [with a light/medium/dark roast] [or a ...].
+
+
