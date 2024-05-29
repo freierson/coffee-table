@@ -1,0 +1,224 @@
+---
+title: "Coffee Consumption EDA "
+format: html
+---
+
+```{r}
+library(tidyverse)
+coffee_survey_raw <- readr::read_csv(file = 'coffee.csv', show_col_types = F)
+coffee <- coffee_survey_raw |> 
+  janitor::clean_names() |> 
+  dplyr::select(
+    submission_id,
+    age = what_is_your_age,
+    cups = how_many_cups_of_coffee_do_you_typically_drink_per_day,
+    where_drink = where_do_you_typically_drink_coffee,
+    brew = how_do_you_brew_coffee_at_home,
+    brew_other = how_else_do_you_brew_coffee_at_home,
+    purchase = on_the_go_where_do_you_typically_purchase_coffee,
+    purchase_other = where_else_do_you_purchase_coffee,
+    favorite = what_is_your_favorite_coffee_drink,
+    favorite_specify = please_specify_what_your_favorite_coffee_drink_is,
+    additions = do_you_usually_add_anything_to_your_coffee,
+    additions_other = what_else_do_you_add_to_your_coffee,
+    dairy = what_kind_of_dairy_do_you_add,
+    sweetener = what_kind_of_sugar_or_sweetener_do_you_add,
+    style = before_todays_tasting_which_of_the_following_best_described_what_kind_of_coffee_you_like,
+    strength = how_strong_do_you_like_your_coffee,
+    roast_level = what_roast_level_of_coffee_do_you_prefer,
+    caffeine = how_much_caffeine_do_you_like_in_your_coffee,
+    expertise = lastly_how_would_you_rate_your_own_coffee_expertise,
+    starts_with("coffee"),
+    prefer_abc = between_coffee_a_coffee_b_and_coffee_c_which_did_you_prefer,
+    prefer_ad = between_coffee_a_and_coffee_d_which_did_you_prefer,
+    prefer_overall = lastly_what_was_your_favorite_overall_coffee,
+    wfh = do_you_work_from_home_or_in_person,
+    total_spend = in_total_much_money_do_you_typically_spend_on_coffee_in_a_month,
+    why_drink = why_do_you_drink_coffee,
+    why_drink_other = other_reason_for_drinking_coffee,
+    taste = do_you_like_the_taste_of_coffee,
+    know_source = do_you_know_where_your_coffee_comes_from,
+    most_paid = what_is_the_most_youve_ever_paid_for_a_cup_of_coffee,
+    most_willing = what_is_the_most_youd_ever_be_willing_to_pay_for_a_cup_of_coffee,
+    value_cafe = do_you_feel_like_you_re_getting_good_value_for_your_money_when_you_buy_coffee_at_a_cafe,
+    spent_equipment = approximately_how_much_have_you_spent_on_coffee_equipment_in_the_past_5_years,
+    value_equipment = do_you_feel_like_you_re_getting_good_value_for_your_money_with_regards_to_your_coffee_equipment,
+    gender,
+    gender_specify = gender_please_specify,
+    education_level,
+    ethnicity_race,
+    ethnicity_race_specify = ethnicity_race_please_specify,
+    employment_status,
+    number_children = number_of_children,
+    political_affiliation
+  ) |>
+  arrange(submission_id) |>
+  rowid_to_column('submission_number')
+```
+
+```{r}
+patterns_classifier <- list(
+  fruit = "(?i)fruit", 
+  honey = "(?i)honey", 
+  apple = "(?i)apple",
+  choc = "(?i)choc",
+  citrus = "(?i)citrus",
+  sour = "(?i)sour",
+  nutty = "(?i)(nutty|nut)",
+  smooth = "(?i)smooth",
+  bright = "(?i)bright",
+  smoky = '(?i)(smoky|smoke)',
+  balanced = '(?i)balanced',
+  caramel = '(?i)caramel',
+  earthy = '(?i)earth',
+  sweet = '(?i)sweet',
+  cherry = '(?i)(cherry|cherries)',
+  berry = '(?i)(berry|berries)',
+  floral = '(?i)(floral|flower)',
+  fermented = '(?i)ferment',
+  complex = '(?i)(complex|complicated)',
+  juicy = '(?i)juicy'
+)
+```
+
+```{r}
+for(note in names(patterns_classifier)) {
+  coffee[paste0('note_a_', note)] <- str_detect(coffee$coffee_a_notes, pattern = patterns_classifier[[note]])
+  coffee[paste0('note_b_', note)] <- str_detect(coffee$coffee_b_notes, pattern = patterns_classifier[[note]])
+  coffee[paste0('note_c_', note)] <- str_detect(coffee$coffee_c_notes, pattern = patterns_classifier[[note]])
+  coffee[paste0('note_d_', note)] <- str_detect(coffee$coffee_d_notes, pattern = patterns_classifier[[note]])
+}
+```
+
+```{r}
+notes <- coffee |>
+  drop_na(dplyr::starts_with('note')) |>
+  pivot_longer(dplyr::starts_with('note'), names_to = 'note', values_to = 'was_mentioned') |>
+  mutate(coffee = substr(note,6,6),
+         note = substr(note, 8, 1000)) |>
+  relocate(coffee, note) |>
+  filter(was_mentioned)
+```
+
+```{r}
+prop_table <- notes |>
+  count(note, coffee) |>
+  group_by(note) |>
+  mutate(prop = n / sum(n),
+         N = sum(n)) |>
+  ungroup() |>
+  select(-n) |>
+  pivot_wider(values_from = prop, names_from = coffee)
+```
+
+```{r}
+sample_size <- coffee |> drop_na(dplyr::starts_with('note')) |> nrow()
+most_often <- expand_grid(
+  note = notes |>
+    distinct(note) |>
+    pull(note),
+  l = letters[1:4],
+  r = letters[1:4]
+) |>
+  filter(l != r) |>
+  left_join(notes |>
+  count(note, coffee), 
+    by = join_by(note,l==coffee)) |>
+  left_join(notes |>
+  count(note, coffee), 
+    by = join_by(note,r==coffee)) |>
+  group_by(note) |>
+  slice_max(n.x) |>
+  slice_max(n.y) |>
+  mutate(stats::prop.test(c(n.x,n.y),c(sample_size,sample_size)) |> broom::tidy()) |>
+  mutate(most_often = ifelse(p.value <= 0.05, l, paste0(l,', ',r))) |>
+  mutate(p.value=round(p.value,4)) |>
+  select(note, p.value, most_often) |>
+  ungroup()
+```
+
+```{r}
+mentioned_with <- inner_join(notes |>
+             select(submission_number, coffee, note),
+           notes |>
+             select(submission_number, coffee, note),
+           by=join_by(submission_number, coffee), relationship = "many-to-many") |>
+  filter(note.x != note.y) |>
+  arrange(submission_number, coffee) |>
+  count(note.x, note.y) |>
+  group_by(note.x) |>
+  slice_max(n) |>
+  rename(note = note.x, mentioned_with = note.y) |>
+  group_by(note, n) |>
+  summarise(mentioned_with = paste0(unique(mentioned_with), collapse=', '),
+            .groups='drop') |>
+  select(-n)
+```
+
+```{r}
+avg_expertise <- notes |>
+  group_by(note) |>
+  drop_na(expertise, coffee) |>
+  summarise(avg_expertise = mean(expertise, na.rm = T),
+            n = n(), .groups='drop') |>
+  arrange(avg_expertise)
+```
+
+```{r}
+overall_means <- coffee |>
+  select(submission_number, contains('bitterness'), contains('acidity'), contains('preference')) |>
+  pivot_longer(-1) |>
+  mutate(coffee = substr(name,8,8),
+         variable = substr(name, 10, 1000)) |>
+  select(-name) |>
+  group_by(coffee,variable) |>
+  summarise(mean = mean(value, na.rm=T), .groups='drop') |>
+  pivot_wider(names_from = variable, values_from = mean) |>
+  rename(sentiment = personal_preference)
+
+note_associations <- notes |>
+  mutate(
+    bitterness = case_when(
+      coffee == 'a' ~ coffee_a_bitterness,
+      coffee == 'b' ~ coffee_b_bitterness,
+      coffee == 'c' ~ coffee_c_bitterness,
+      coffee == 'd' ~ coffee_d_bitterness
+    ),
+    acidity = case_when(
+      coffee == 'a' ~ coffee_a_acidity,
+      coffee == 'b' ~ coffee_b_acidity,
+      coffee == 'c' ~ coffee_c_acidity,
+      coffee == 'd' ~ coffee_d_acidity
+    ),
+    sentiment = case_when(
+      coffee == 'a' ~ coffee_a_personal_preference,
+      coffee == 'b' ~ coffee_b_personal_preference,
+      coffee == 'c' ~ coffee_c_personal_preference,
+      coffee == 'd' ~ coffee_d_personal_preference
+    )
+  ) |>
+  select(submission_number, coffee, note, bitterness, acidity, sentiment) |>
+  inner_join(overall_means, by=join_by(coffee), suffix = c('', '_mean')) |>
+  group_by(note) |>
+  summarise(
+    bitterness_n = sum(!is.na(bitterness)),
+    acidity_n = sum(!is.na(acidity)),
+    score_n = sum(!is.na(sentiment)),
+    bitterness = mean(bitterness-bitterness_mean, na.rm = T),
+    acidity = mean(acidity-acidity_mean, na.rm = T),
+    sentiment = mean(sentiment-sentiment_mean, na.rm = T),
+    .groups='drop'
+  )
+```
+
+```{r}
+prop_table |>
+  left_join(most_often, by = join_by(note)) |>
+  left_join(mentioned_with, by = join_by(note)) |>
+  left_join(note_associations, by = join_by(note)) |>
+  select(-ends_with('_n')) |>
+  knitr::kable(digits = 2)
+```
+
+
+
