@@ -58,28 +58,30 @@ coffee <- coffee_survey_raw |>
 
 ```{r}
 patterns_classifier <- list(
-  fruit = "(?i)fruit", 
-  honey = "(?i)honey", 
-  apple = "(?i)apple",
-  choc = "(?i)choc",
-  citrus = "(?i)citrus",
-  sour = "(?i)sour",
-  nutty = "(?i)(nutty|nut)",
-  smooth = "(?i)smooth",
-  bright = "(?i)bright",
-  smoky = '(?i)(smoky|smoke)',
-  balanced = '(?i)balanced',
-  caramel = '(?i)caramel',
-  earthy = '(?i)earth',
-  sweet = '(?i)sweet',
-  cherry = '(?i)(cherry|cherries)',
-  berry = '(?i)(berry|berries)',
-  floral = '(?i)(floral|flower)',
-  fermented = '(?i)ferment',
-  complex = '(?i)(complex|complicated)',
-  juicy = '(?i)juicy'
+  Fruity = "(?i)fruit", 
+  Honey = "(?i)honey", 
+  Apple = "(?i)apple",
+  Chocolate = "(?i)chocolat",
+  Citrus = "(?i)citrus",
+  Sour = "(?i)sour",
+  Nutty = "(?i)nut",
+  Smooth = "(?i)smooth",
+  Bright = "(?i)bright",
+  Smoky = '(?i)(smoky|smoke)',
+  Balanced = '(?i)balanced',
+  Caramel = '(?i)caramel',
+  Earthy = '(?i)earth',
+  Sweet = '(?i)sweet',
+  Cherry = '(?i)(cherry|cherries)',
+  Berry = '(?i)(berry|berries)',
+  Floral = '(?i)(floral|flower)',
+  Fermented = '(?i)ferment',
+  Complex = '(?i)(complex|complicated)',
+  Juicy = '(?i)juic(e|y)'
 )
 ```
+
+
 
 ```{r}
 for(note in names(patterns_classifier)) {
@@ -217,7 +219,7 @@ prop_table |>
   left_join(mentioned_with, by = join_by(note)) |>
   left_join(note_associations, by = join_by(note)) |>
   select(-ends_with('_n')) |>
-  knitr::kable(digits = 2)
+  write_csv("table_data.csv")
 ```
 
 
