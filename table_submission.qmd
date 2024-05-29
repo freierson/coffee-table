@@ -1,0 +1,161 @@
+---
+title: "Table"
+---
+
+
+```{r}
+library(tidyverse)
+library(reactable)
+library(reactablefmtr)
+```
+
+<script src='https://unpkg.com/popper.js@1'></script><script src='https://unpkg.com/tippy.js@5'></script>
+
+```{r}
+table_data <- read_csv("table_data.csv") |>
+  rename(n = N, a_prop = a, b_prop = b, c_prop = c, d_prop = d) |>
+  select(-p.value) |>
+  select(note, sentiment,bitterness, acidity,mentioned_with,most_often,  a_prop, b_prop, c_prop, d_prop)
+```
+
+
+```{css}
+.bean-header {
+  width: 2em;
+}
+
+.bean-header-flag {
+  font-size: 2em;
+}
+
+.bean-often {
+  width: 1em;
+}
+
+.grouped-header {
+  font-size: 2em;
+}
+
+.a_prop {
+  filter: invert(94%) sepia(12%) saturate(520%) hue-rotate(331deg) brightness(90%) contrast(89%);
+}
+
+.b_prop {
+  filter: invert(40%) sepia(4%) saturate(5059%) hue-rotate(330deg) brightness(90%) contrast(78%);
+}
+
+.c_prop {
+  filter: invert(11%) sepia(15%) saturate(1762%) hue-rotate(324deg) brightness(94%) contrast(85%);
+}
+
+.d_prop {
+  filter: invert(36%) sepia(54%) saturate(394%) hue-rotate(56deg) brightness(93%) contrast(90%);
+}
+.rt-text-content {
+  width: 100%;
+}
+.bean-header-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+```
+
+```{r}
+bean_header <- JS("
+  function(cellInfo, tableState) {
+    const flag = cellInfo.id == 'd_prop' ? '🇨🇴' : '🇰🇪';
+    const country_label = cellInfo.id == 'd_prop' ? 'Columbia' : 'Kenya';
+    var roast_label;
+    if(cellInfo.id == 'd_prop') {
+      roast_label = 'Columbian fermented bean';
+    } else if(cellInfo.id == 'c_prop') {
+      roast_label = 'Kenyan Dark roasted beans'
+    } else if(cellInfo.id == 'b_prop') {
+      roast_label = 'Kenyan Medium roasted beans'
+    } else {
+      roast_label = 'Kenyan Light roasted beans'
+    }
+
+    if (document.querySelectorAll('[data-tippy-content]').length > 0) {
+      tippy('[data-tippy-content]')
+    }
+
+    return `<div class = 'bean-header-container'><span class = 'bean-header-flag' data-tippy-content = '${country_label}'>${flag}</span><img src='https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
+  }
+")
+```
+
+
+```{r}
+bean_cell_bars <- data_bars(
+  data = table_data,
+  text_position = "above",
+  tooltip = TRUE,
+  fill_color = "#804A26",
+  number_fmt = scales::label_number(accuracy = 0.01)
+)
+```
+
+```{r}
+color_pos_neg <- function(value) {
+        color <- if (value > 0) {
+          "#008000"
+        } else if (value <= 0) {
+          "#e00000"
+        }
+        list(fontWeight = 600, color = color)
+      }
+```
+
+```{r}
+#| column: screen-inset
+reactable(
+  table_data,
+  defaultColDef = colDef(format = colFormat(digits = 2)),
+  pagination = FALSE,
+  defaultPageSize = nrow(table_data),
+  columns = list(
+    note = colDef(name = "Coffee flavour note"),
+    n = colDef(name = "Occurences", format = colFormat(digits = 0), width = 120),
+    a_prop = colDef(
+      header = bean_header, 
+      cell = bean_cell_bars,
+      html = TRUE
+    ),
+    b_prop = colDef(
+      header = bean_header,
+      html = TRUE,
+      cell = bean_cell_bars
+    ),
+    c_prop = colDef(
+      header = bean_header,
+      html = TRUE,
+      cell = bean_cell_bars
+    ),
+    d_prop = colDef(
+      header = bean_header,
+      html = TRUE,
+      cell = bean_cell_bars
+    ),
+    most_often = colDef(
+      name = "Best describes", format = colFormat(digits = 2),
+      width = 110,
+    cell = JS("
+      function(cellInfo, tableState) {
+
+        return cellInfo.value.split(',').map(x => {
+          return `${cellInfo.id == 'd_prop' ? '🇨🇴' : '🇰🇪'} <img src='https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
+        }).join()
+      }
+    "), html = TRUE),
+    bitterness = colDef(name = "Bitterness", style = color_pos_neg),
+    acidity = colDef(name = "Acidity", style = color_pos_neg),
+    mentioned_with = colDef(name = "Complimentary note", width = 150),
+    sentiment = colDef(
+      name = "Sentiment",
+      format = colFormat(digits = 2),
+      style = color_pos_neg
+    ))
+)
+```
