@@ -1,9 +1,19 @@
 ---
-title: "Table"
+title: "Coffee Table"
+subtitle: "Unlocking Coffee's Secrets: Exploring Flavour Notes in James Hoffman's Large Scale Blind Taste Test"
+title-block-banner: banner.avif
 ---
 
+<!-- <img src="" class = "banner-img page-full"/>  -->
+
+James Hoffman, a coffee expert and YouTuber ran a blind coffee taste test in October of 2023 that involved participants receiving coffee taste kits. The same kind of kenyan coffee bean was given at three levels of roast, light <img src="https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg" class="bean-often a_prop" alt="coffe bean"> medium <img src="https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg" class="bean-often b_prop" alt="coffe bean">, and dark <img src="https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg" class="bean-often c_prop" alt="coffe bean">. There was also a columbian coffee bean <img src="https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg" class="bean-often d_prop" alt="coffe bean"> that went through a natural fermentation process. People were asked to record flavour notes for each coffee, rate them on bitterness (1-5), acidity (1-5), and general enjoyment (1-5). Our table aims to highlight what type of coffee each flavour note typically describes. To understand the table better, expand a flavour note to learn about it.
+
+<!-- <span class = "credits">Image courtesy of [unsplash.com](https://unsplash.com/photos/coffee-bean-lot-TD4DBagg2wE) </span> -->
 
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 library(tidyverse)
 library(reactable)
 library(reactablefmtr)
@@ -13,6 +23,9 @@ library(htmltools)
 <script src='https://unpkg.com/popper.js@1'></script><script src='https://unpkg.com/tippy.js@5'></script><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" type="text/css" />
 
 ```{r}
+#| warning: false
+#| message: false
+#| echo: false
 table_data <- read_csv("table_data.csv") |>
   rename(n = N, a_prop = a, b_prop = b, c_prop = c, d_prop = d) |>
   select(-p.value)
@@ -20,6 +33,12 @@ table_data <- read_csv("table_data.csv") |>
 
 
 ```{css}
+#| echo: false 
+
+.subtitle {
+  font-weight: bold;
+}
+
 .bean-header {
   width: 2em;
 }
@@ -93,6 +112,10 @@ table_data <- read_csv("table_data.csv") |>
 ```
 
 ```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
 bean_header <- JS("
   function(cellInfo, tableState) {
     const flag = cellInfo.id == 'd_prop' ? '🇨🇴' : '🇰🇪';
@@ -121,10 +144,20 @@ up_down_arrow <- JS("
     return `${cellInfo.value}<span>${cellInfo.value <= 0 ? '&#x25BC;' : '&#x25B2;'}</span>`;
   }
 ")
+
+thumbs_up_down <- JS("
+  function(cellInfo, tableState) {
+    return `${cellInfo.value}<span> ${cellInfo.value <= 0 ? '👎' : '👍'}</span>`;
+  }
+")
 ```
 
 
 ```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
 bean_cell_bars <- data_bars(
   data = table_data,
   text_position = "above",
@@ -135,6 +168,10 @@ bean_cell_bars <- data_bars(
 ```
 
 ```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
 color_pos_neg <- function(value) {
         color <- if (value > 0) {
           "#008000"
@@ -149,6 +186,8 @@ color_pos_neg <- function(value) {
 
 ```{r}
 #| column: screen-inset
+#| echo: false
+
 reactable(
   table_data |>
     select(note, sentiment,bitterness, acidity,mentioned_with,most_often,  a_prop, b_prop, c_prop, d_prop),
@@ -218,7 +257,7 @@ reactable(
       name = "Sentiment",
       format = colFormat(digits = 2),
       style = color_pos_neg,
-      cell = up_down_arrow,
+      cell = thumbs_up_down,
       html = TRUE
     ))
 )
