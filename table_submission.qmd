@@ -4,6 +4,8 @@ subtitle: "Unlocking Coffee's Secrets: Exploring Flavour Notes in James Hoffman'
 title-block-banner: banner.avif
 ---
 
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+
 <!-- <img src="" class = "banner-img page-full"/>  -->
 
 James Hoffman, a coffee expert and YouTuber ran a blind coffee taste test in October of 2023 that involved participants receiving coffee taste kits. The same kind of kenyan coffee bean was given at three levels of roast, light <img src="coffee-bean-filled-roast-brew.svg" class="bean-often a_prop" alt="coffe bean"> medium <img src="coffee-bean-filled-roast-brew.svg" class="bean-often b_prop" alt="coffe bean">, and dark <img src="coffee-bean-filled-roast-brew.svg" class="bean-often c_prop" alt="coffe bean">. There was also a columbian coffee bean <img src="coffee-bean-filled-roast-brew.svg" class="bean-often d_prop" alt="coffe bean"> that went through a natural fermentation process. People were asked to record flavour notes for each coffee, rate them on bitterness (1-5), acidity (1-5), and general enjoyment (1-5). Our table aims to highlight what type of coffee each flavour note typically describes. To understand the table better, expand a flavour note to learn about it.
@@ -34,6 +36,12 @@ table_data <- read_csv("table_data.csv") |>
 
 ```{css}
 #| echo: false 
+
+.noto-emoji-coffee {
+  font-family: "Noto Color Emoji", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
 
 audio { 
   -moz-border-radius: 15px;
@@ -140,19 +148,19 @@ bean_header <- JS("
       tippy('[data-tippy-content]')
     }
 
-    return `<div class = 'bean-header-container'><span class = 'bean-header-flag' data-tippy-content = '${country_label}'>${flag}</span><img src='coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
+    return `<div class = 'bean-header-container'><span class = 'bean-header-flag noto-emoji-coffee' data-tippy-content = '${country_label}'>${flag}</span><img src='coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
   }
 ")
 
 up_down_arrow <- JS("
   function(cellInfo, tableState) {
-    return `${cellInfo.value}<span>${cellInfo.value <= 0 ? '&#x25BC;' : '&#x25B2;'}</span>`;
+    return `${cellInfo.value}<span class = 'noto-emoji-coffee'>${cellInfo.value <= 0 ? '&#x25BC;' : '&#x25B2;'}</span>`;
   }
 ")
 
 thumbs_up_down <- JS("
   function(cellInfo, tableState) {
-    return `${cellInfo.value}<span> ${cellInfo.value <= 0 ? '👎' : '👍'}</span>`;
+    return `${cellInfo.value}<span class='noto-emoji-coffee'> ${cellInfo.value <= 0 ? '👎' : '👍'}</span>`;
   }
 ")
 ```
@@ -248,7 +256,7 @@ reactable(
       function(cellInfo, tableState) {
 
         return cellInfo.value.split(',').map(x => {
-          return `${cellInfo.id == 'd_prop' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA'} <img src='coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
+          return `<span class='noto-emoji-coffee'> ${cellInfo.id == 'd_prop' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA'}</span> <img src='coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
         }).join()
       }
     "), html = TRUE),
