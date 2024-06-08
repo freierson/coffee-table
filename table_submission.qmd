@@ -256,7 +256,8 @@ reactable(
       function(cellInfo, tableState) {
 
         return cellInfo.value.split(',').map(x => {
-          return `<span class='noto-emoji-coffee'> ${cellInfo.row.most_often == 'd' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA'}</span> <img src='coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
+          console.log(x);
+          return `<span class='noto-emoji-coffee'> ${x.trim() == 'd' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA'}</span> <img src='coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
         }).join()
       }
     "), html = TRUE),
