@@ -6,7 +6,7 @@ title-block-banner: banner.avif
 
 <!-- <img src="" class = "banner-img page-full"/>  -->
 
-James Hoffman, a coffee expert and YouTuber ran a blind coffee taste test in October of 2023 that involved participants receiving coffee taste kits. The same kind of kenyan coffee bean was given at three levels of roast, light <img src="https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg" class="bean-often a_prop" alt="coffe bean"> medium <img src="https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg" class="bean-often b_prop" alt="coffe bean">, and dark <img src="https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg" class="bean-often c_prop" alt="coffe bean">. There was also a columbian coffee bean <img src="https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg" class="bean-often d_prop" alt="coffe bean"> that went through a natural fermentation process. People were asked to record flavour notes for each coffee, rate them on bitterness (1-5), acidity (1-5), and general enjoyment (1-5). Our table aims to highlight what type of coffee each flavour note typically describes. To understand the table better, expand a flavour note to learn about it.
+James Hoffman, a coffee expert and YouTuber ran a blind coffee taste test in October of 2023 that involved participants receiving coffee taste kits. The same kind of kenyan coffee bean was given at three levels of roast, light <img src="coffee-bean-filled-roast-brew.svg" class="bean-often a_prop" alt="coffe bean"> medium <img src="coffee-bean-filled-roast-brew.svg" class="bean-often b_prop" alt="coffe bean">, and dark <img src="coffee-bean-filled-roast-brew.svg" class="bean-often c_prop" alt="coffe bean">. There was also a columbian coffee bean <img src="coffee-bean-filled-roast-brew.svg" class="bean-often d_prop" alt="coffe bean"> that went through a natural fermentation process. People were asked to record flavour notes for each coffee, rate them on bitterness (1-5), acidity (1-5), and general enjoyment (1-5). Our table aims to highlight what type of coffee each flavour note typically describes. To understand the table better, expand a flavour note to learn about it.
 
 <!-- <span class = "credits">Image courtesy of [unsplash.com](https://unsplash.com/photos/coffee-bean-lot-TD4DBagg2wE) </span> -->
 
@@ -34,6 +34,11 @@ table_data <- read_csv("table_data.csv") |>
 
 ```{css}
 #| echo: false 
+
+audio { 
+  -moz-border-radius: 15px;
+  border-radius: auto;
+}
 
 .subtitle {
   font-weight: bold;
@@ -118,7 +123,7 @@ table_data <- read_csv("table_data.csv") |>
 
 bean_header <- JS("
   function(cellInfo, tableState) {
-    const flag = cellInfo.id == 'd_prop' ? '🇨🇴' : '🇰🇪';
+    const flag = cellInfo.id == 'd_prop' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA';
     const country_label = cellInfo.id == 'd_prop' ? 'Columbia' : 'Kenya';
     var roast_label;
     if(cellInfo.id == 'd_prop') {
@@ -135,7 +140,7 @@ bean_header <- JS("
       tippy('[data-tippy-content]')
     }
 
-    return `<div class = 'bean-header-container'><span class = 'bean-header-flag' data-tippy-content = '${country_label}'>${flag}</span><img src='https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
+    return `<div class = 'bean-header-container'><span class = 'bean-header-flag' data-tippy-content = '${country_label}'>${flag}</span><img src='coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
   }
 ")
 
@@ -200,8 +205,15 @@ reactable(
         class = "description-container",
         div(
           class = "card",
-          div(span(table_data$note[index], style = "font-size: 2em;"), span("  🔊", style = "font-size: 1.2em; cursor: pointer", onclick = glue::glue("playSound('text-to-speech/{table_data$note[index]}.mp3')"))),
-          p(table_data$description[index])
+          div(span(table_data$note[index], style = "font-size: 2em;")),
+          p(table_data$description[index]),
+          # span("  🔊",
+          #   style = "font-size: 1.2em; cursor: pointer", 
+          #   onclick = glue::glue("playSound('text-to-speech/{table_data$note[index]}.mp3')")
+          # )
+          span(style="display:flex; flex-direction: row; justify-content: center;", 
+            tag("audio", list(controls=TRUE, controlsList="nodownload", src=glue::glue("text-to-speech/{table_data$note[index]}.mp3")))
+          )
         )
       )
     ))
@@ -230,31 +242,31 @@ reactable(
       cell = bean_cell_bars
     ),
     most_often = colDef(
-      name = "Best describes", format = colFormat(digits = 2),
-      width = 110,
+      name = "Best describes <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>", format = colFormat(digits = 2),
+      width = 130,
     cell = JS("
       function(cellInfo, tableState) {
 
         return cellInfo.value.split(',').map(x => {
-          return `${cellInfo.id == 'd_prop' ? '🇨🇴' : '🇰🇪'} <img src='https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
+          return `${cellInfo.id == 'd_prop' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA'} <img src='https://www.svgrepo.com/show/493660/coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
         }).join()
       }
     "), html = TRUE),
     bitterness = colDef(
-      name = "Bitterness",
+      name = "Bitterness <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>",
       style = \(x) list(fontWeight = 600),
       cell = up_down_arrow,
       html = TRUE
     ),
     acidity = colDef(
-      name = "Acidity",
+      name = "Acidity <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>",
       style = \(x) list(fontWeight = 600),
       cell = up_down_arrow,
       html = TRUE
     ),
-    mentioned_with = colDef(name = "Complimentary note", width = 150),
+    mentioned_with = colDef(name = "Complimentary note <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>", width = 150, html = TRUE),
     sentiment = colDef(
-      name = "Sentiment",
+      name = "Sentiment <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>",
       format = colFormat(digits = 2),
       style = color_pos_neg,
       cell = thumbs_up_down,
