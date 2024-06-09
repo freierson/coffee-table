@@ -215,7 +215,7 @@ note_associations <- notes |>
 ```
 
 ```{r}
-prop_table |>
+table_data <- prop_table |>
   left_join(most_often, by = join_by(note)) |>
   left_join(mentioned_with, by = join_by(note)) |>
   left_join(note_associations, by = join_by(note)) |>
@@ -236,9 +236,34 @@ prop_table |>
       T ~ ''
     ),
     description = glue::glue('
-    {note} was used as a flavour note {N} times. This note was used when the coffee was experienced as {ifelse(bitterness<0,"less","more")} bitter ({format(round(bitterness,2),nsmall=2,trim=T)}), {ifelse(acidity<0,"less","more")} acidic ({format(round(acidity,2),nsmall=2,trim=T)}), and {ifelse(sentiment<0,"less","more")} enjoyable ({format(round(sentiment,2),nsmall=2,trim=T)}). The flavour note was commonly mentioned along with "{mentioned_with}". Among the coffees in the kit the note was most commonly used to describe the {most_often1}{most_often2}.')
-  ) |>
+    {note} was used as a flavour note {prettyNum(N,big.mark=",",scientific=FALSE)} times. This note was used when the coffee was experienced as {ifelse(bitterness<0,"less","more")} bitter, {ifelse(acidity<0,"less","more")} acidic, and {ifelse(sentiment<0,"less","more")} enjoyable. The flavour note was commonly mentioned along with "{mentioned_with}". Among the coffees in the kit the note was most commonly used to describe the {most_often1}{most_often2}.')
+  )
+table_data |>
   write_csv("table_data.csv")
 ```
+
+```{r}
+#| include: false
+#| eval: false
+dict <- as.list(table_data$description)
+names(dict) <- table_data$note
+jsonlite::toJSON(dict, pretty = T)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

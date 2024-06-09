@@ -1,0 +1,245 @@
+---
+warning: false
+message: false
+echo: false
+embed-resources: true
+---
+
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+<script src='https://unpkg.com/popper.js@1'></script><script src='https://unpkg.com/tippy.js@5'></script><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" type="text/css" />
+
+```{css}
+#| echo: false 
+
+.noto-emoji-coffee {
+  font-family: "Noto Color Emoji", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+audio { 
+  -moz-border-radius: 15px;
+  border-radius: auto;
+}
+
+.subtitle {
+  font-weight: bold;
+}
+
+.bean-header {
+  width: 2em;
+}
+
+.bean-header-flag {
+  font-size: 2em;
+}
+
+.bean-often {
+  width: 1em;
+}
+
+.grouped-header {
+  font-size: 2em;
+}
+
+.a_prop {
+  filter: invert(94%) sepia(12%) saturate(520%) hue-rotate(331deg) brightness(90%) contrast(89%);
+}
+
+.b_prop {
+  filter: invert(40%) sepia(4%) saturate(5059%) hue-rotate(330deg) brightness(90%) contrast(78%);
+}
+
+.c_prop {
+  filter: invert(11%) sepia(15%) saturate(1762%) hue-rotate(324deg) brightness(94%) contrast(85%);
+}
+
+.d_prop {
+  filter: invert(36%) sepia(54%) saturate(394%) hue-rotate(56deg) brightness(93%) contrast(90%);
+}
+.rt-text-content {
+  width: 100%;
+}
+.bean-header-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.up {
+  color: #e00000;
+}
+.down {
+  color: #008000;
+}
+
+.description-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 30em;
+    text-align: center;
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 24px;
+}
+
+.card p {
+    font-size: 16px;
+    color: #666;
+}
+```
+
+```{r}
+library(tidyverse)
+library(reactable)
+library(reactablefmtr)
+library(htmltools)
+table_data <- read_csv("table_data.csv") |>
+  rename(n = N, a_prop = a, b_prop = b, c_prop = c, d_prop = d) |>
+  select(-p.value)
+```
+
+```{r}
+bean_header <- JS("
+  function(cellInfo, tableState) {
+    const flag = cellInfo.id == 'd_prop' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA';
+    const country_label = cellInfo.id == 'd_prop' ? 'Colombian origin' : 'Kenyan origin';
+    var roast_label;
+    if(cellInfo.id == 'd_prop') {
+      roast_label = 'Fermented';
+    } else if(cellInfo.id == 'c_prop') {
+      roast_label = 'Dark roast'
+    } else if(cellInfo.id == 'b_prop') {
+      roast_label = 'Medium roast'
+    } else {
+      roast_label = 'Light roast'
+    }
+
+    if (document.querySelectorAll('[data-tippy-content]').length > 0) {
+      tippy('[data-tippy-content]')
+    }
+
+    return `<div class = 'bean-header-container'><span class = 'bean-header-flag noto-emoji-coffee' data-tippy-content = '${country_label}'>${flag}</span><img src='coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
+  }
+")
+
+up_down_arrow <- JS("
+  function(cellInfo, tableState) {
+    return `${cellInfo.value}<span class = 'noto-emoji-coffee'>${cellInfo.value <= 0 ? '&#x25BC;' : '&#x25B2;'}</span>`;
+  }
+")
+
+thumbs_up_down <- JS("
+  function(cellInfo, tableState) {
+    return `${cellInfo.value}<span class='noto-emoji-coffee'>${cellInfo.value <= 0 ? '👎' : '👍'}</span>`;
+  }
+")
+
+bean_cell_bars <- data_bars(
+  data = table_data,
+  text_position = "above",
+  tooltip = TRUE,
+  fill_color = "#804A26",
+  number_fmt = scales::label_percent(accuracy = 0.1)
+)
+
+color_pos_neg <- function(value) {
+        color <- if (value > 0) {
+          "#008000"
+        } else if (value <= 0) {
+          "#e00000"
+        }
+        list(fontWeight = 600, color = color)
+      }
+```
+
+<script>let playSound = (x) => new Audio(x).play()</script>
+
+```{r}
+#| column: screen-inset
+reactable(
+  table_data |>
+    select(note, sentiment,bitterness, acidity,mentioned_with,most_often,  a_prop, b_prop, c_prop, d_prop),
+  defaultColDef = colDef(format = colFormat(digits = 2)),
+  pagination = FALSE,
+  defaultPageSize = nrow(table_data),
+  details = function(index, column_name){
+    return(tagList(
+      div(
+        class = "description-container",
+        div(
+          class = "card",
+          div(span(table_data$note[index], style = "font-size: 2em;")),
+          p(table_data$description[index]),
+          span(style="display:flex; flex-direction: row; justify-content: center;", 
+            tag("audio", list(controls=TRUE, controlsList="nodownload", src=glue::glue("text-to-speech/{table_data$note[index]}.mp3")))
+          )
+        )
+      )
+    ))
+  },
+  columns = list(
+    note = colDef(name = "Coffee flavour note"),
+    n = colDef(name = "Occurences", format = colFormat(digits = 0), width = 120),
+    a_prop = colDef(
+      header = bean_header, 
+      cell = bean_cell_bars,
+      html = TRUE
+    ),
+    b_prop = colDef(
+      header = bean_header,
+      html = TRUE,
+      cell = bean_cell_bars
+    ),
+    c_prop = colDef(
+      header = bean_header,
+      html = TRUE,
+      cell = bean_cell_bars
+    ),
+    d_prop = colDef(
+      header = bean_header,
+      html = TRUE,
+      cell = bean_cell_bars
+    ),
+    most_often = colDef(
+      name = "Best describes <i class='fa-regular fa-circle-question' data-tippy-content='Which coffee did people usually describe when this note was used? Multiple coffees are listed if the difference between them is not statistically significant.'></i>", format = colFormat(digits = 2),
+      width = 130,
+    cell = JS("
+      function(cellInfo, tableState) {
+        return cellInfo.value.split(',').map(x => {
+          console.log(x);
+          return `<span class='noto-emoji-coffee'> ${x.trim() == 'd' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA'}</span> <img src='coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
+        }).join()
+      }
+    "), html = TRUE),
+    bitterness = colDef(
+      name = "Bitterness <i class='fa-regular fa-circle-question' data-tippy-content='Positive (negative) numbers indicate people used this note when they found the coffee bitter (not bitter).'></i>",
+      style = \(x) list(fontWeight = 600),
+      cell = up_down_arrow,
+      html = TRUE
+    ),
+    acidity = colDef(
+      name = "Acidity <i class='fa-regular fa-circle-question' data-tippy-content='Positive (negative) numbers indicate people used this note when they found the coffee acidic (not acidic).'></i>",
+      style = \(x) list(fontWeight = 600),
+      cell = up_down_arrow,
+      html = TRUE
+    ),
+    mentioned_with = colDef(name = "Complementary note <i class='fa-regular fa-circle-question' data-tippy-content='This note often appears with the flavour note in the first column.'></i>", width = 150, html = TRUE),
+    sentiment = colDef(
+      name = "Sentiment <i class='fa-regular fa-circle-question' data-tippy-content='Positive (negative) numbers indicate people used this note when they liked (disliked) the coffee.'></i>",
+      format = colFormat(digits = 2),
+      style = color_pos_neg,
+      cell = thumbs_up_down,
+      html = TRUE
+    ))
+)
+```
