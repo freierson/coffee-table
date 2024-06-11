@@ -8,7 +8,7 @@ title-block-banner: banner.avif
 
 <!-- <img src="" class = "banner-img page-full"/>  -->
 
-James Hoffman, a coffee expert and YouTuber ran a blind coffee taste test in October of 2023 that involved participants receiving coffee taste kits. The same kind of kenyan coffee bean was given at three levels of roast, light <img src="coffee-bean-filled-roast-brew.svg" class="bean-often a_prop" alt="coffe bean"> medium <img src="coffee-bean-filled-roast-brew.svg" class="bean-often b_prop" alt="coffe bean">, and dark <img src="coffee-bean-filled-roast-brew.svg" class="bean-often c_prop" alt="coffe bean">. There was also a columbian coffee bean <img src="coffee-bean-filled-roast-brew.svg" class="bean-often d_prop" alt="coffe bean"> that went through a natural fermentation process. People were asked to record flavour notes for each coffee, rate them on bitterness (1-5), acidity (1-5), and general enjoyment (1-5). Our table aims to highlight what type of coffee each flavour note typically describes. To understand the table better, expand a flavour note to learn about it.
+James Hoffman, a coffee expert and YouTuber ran a blind coffee taste test in October of 2023 that involved participants receiving coffee taste kits. The same kind of kenyan coffee bean was given at three levels of roast, light <img src="docs/coffee-bean-filled-roast-brew.svg" class="bean-often a_prop" alt="coffe bean"> medium <img src="docs/coffee-bean-filled-roast-brew.svg" class="bean-often b_prop" alt="coffe bean">, and dark <img src="docs/coffee-bean-filled-roast-brew.svg" class="bean-often c_prop" alt="coffe bean">. There was also a columbian coffee bean <img src="docs/coffee-bean-filled-roast-brew.svg" class="bean-often d_prop" alt="coffe bean"> that went through a natural fermentation process. People were asked to record flavour notes for each coffee, rate them on bitterness (1-5), acidity (1-5), and general enjoyment (1-5). Our table aims to highlight what type of coffee each flavour note typically describes. To understand the table better, expand a flavour note to learn about it.
 
 <!-- <span class = "credits">Image courtesy of [unsplash.com](https://unsplash.com/photos/coffee-bean-lot-TD4DBagg2wE) </span> -->
 
@@ -41,6 +41,45 @@ table_data <- read_csv("table_data.csv") |>
   font-family: "Noto Color Emoji", sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
+}
+
+.round-flag-icon {
+  position: relative;
+  display: inline-block;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* KE
+BR, CR, SV, ET
+ET, ID
+CO */
+
+.flag-size-m {
+  width: 1rem;
+  height: 1rem;
+}
+
+.flag-size-l {
+  width: 2rem;
+  height: 2rem;
+}
+
+.round-flag-bean-b {
+  background-image: url('flags/bean-b.png')
+}
+
+.round-flag-bean-c {
+  background-image: url('flags/bean-c.png')
+}
+
+.round-flag-ke {
+  background-image: url('flags/ke.svg')
+}
+
+.round-flag-co {
+  background-image: url('flags/co.svg')
 }
 
 audio { 
@@ -124,45 +163,77 @@ audio {
 }
 ```
 
+```{js}
+#| echo: false
+
+var get_bean_icon = function(label, size) {
+  let flag;
+  switch(label) {
+    case 'a':
+      flag = `<i class='round-flag-icon round-flag-ke flag-size-${size}'></i>`;
+      break;
+    case 'b':
+      flag = `<i class='round-flag-icon round-flag-bean-b flag-size-${size}'></i>`;
+      break;
+    case 'c':
+      flag = `<i class='round-flag-icon round-flag-bean-c flag-size-${size}'></i>`;
+      break;
+    case 'd':
+      flag = `<i class='round-flag-icon round-flag-co flag-size-${size}'></i>`;
+      break;
+  }
+  return flag;
+}
+
+var bean_header_fn = function(cellInfo, tableState) {
+  // const flag = cellInfo.id == 'd_prop' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA';
+  const country_label = cellInfo.id == 'd_prop' ? 'Columbia' : 'Kenya';
+  var flag = get_bean_icon(cellInfo.id.substr(0,1), "l")
+  if(cellInfo.id == 'd_prop') {
+    roast_label = 'Columbian fermented bean';
+  } else if(cellInfo.id == 'c_prop') {
+    roast_label = 'Kenyan Dark roasted beans'
+  } else if(cellInfo.id == 'b_prop') {
+    roast_label = 'Kenyan Medium roasted beans'
+  } else {
+    roast_label = 'Kenyan Light roasted beans'
+  }
+
+  if (document.querySelectorAll('[data-tippy-content]').length > 0) {
+    tippy('[data-tippy-content]')
+  }
+
+  return `<div class = 'bean-header-container'><span class = 'bean-header-flag noto-emoji-coffee' data-tippy-content = '${country_label}'>${flag}</span><img src='docs/coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
+}
+
+var up_down_arrow_fn = function(cellInfo, tableState) {
+  return `${cellInfo.value}<span class = 'noto-emoji-coffee'>${cellInfo.value <= 0 ? '&#x25BC;' : '&#x25B2;'}</span>`;
+}
+
+var thumbs_up_down_fn = function(cellInfo, tableState) {
+  return `${cellInfo.value}<span class='noto-emoji-coffee'> ${cellInfo.value <= 0 ? '👎' : '👍'}</span>`;
+}
+
+var most_often_fn = function(cellInfo, tableState) {
+  return cellInfo.value.split(',').map(x => {
+      flag = get_bean_icon(x.trim(), "m");
+      return `<span class='noto-emoji-coffee'> ${flag}</span> <img src='docs/coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
+    }).join()
+}
+```
+
 ```{r}
 #| echo: false
 #| message: false
 #| warning: false
 
-bean_header <- JS("
-  function(cellInfo, tableState) {
-    const flag = cellInfo.id == 'd_prop' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA';
-    const country_label = cellInfo.id == 'd_prop' ? 'Columbia' : 'Kenya';
-    var roast_label;
-    if(cellInfo.id == 'd_prop') {
-      roast_label = 'Columbian fermented bean';
-    } else if(cellInfo.id == 'c_prop') {
-      roast_label = 'Kenyan Dark roasted beans'
-    } else if(cellInfo.id == 'b_prop') {
-      roast_label = 'Kenyan Medium roasted beans'
-    } else {
-      roast_label = 'Kenyan Light roasted beans'
-    }
+bean_header <- JS("(cellInfo, tableState) => bean_header_fn(cellInfo, tableState)")
 
-    if (document.querySelectorAll('[data-tippy-content]').length > 0) {
-      tippy('[data-tippy-content]')
-    }
+up_down_arrow <- JS("(cellInfo, tableState) => up_down_arrow_fn(cellInfo, tableState)")
 
-    return `<div class = 'bean-header-container'><span class = 'bean-header-flag noto-emoji-coffee' data-tippy-content = '${country_label}'>${flag}</span><img src='coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
-  }
-")
+thumbs_up_down <- JS("(cellInfo, tableState) => thumbs_up_down_fn(cellInfo, tableState)")
 
-up_down_arrow <- JS("
-  function(cellInfo, tableState) {
-    return `${cellInfo.value}<span class = 'noto-emoji-coffee'>${cellInfo.value <= 0 ? '&#x25BC;' : '&#x25B2;'}</span>`;
-  }
-")
-
-thumbs_up_down <- JS("
-  function(cellInfo, tableState) {
-    return `${cellInfo.value}<span class='noto-emoji-coffee'> ${cellInfo.value <= 0 ? '👎' : '👍'}</span>`;
-  }
-")
+most_often <- JS("(cellInfo, tableState) => most_often_fn(cellInfo, tableState)")
 ```
 
 
@@ -252,15 +323,9 @@ reactable(
     most_often = colDef(
       name = "Best describes <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>", format = colFormat(digits = 2),
       width = 130,
-    cell = JS("
-      function(cellInfo, tableState) {
-
-        return cellInfo.value.split(',').map(x => {
-          console.log(x);
-          return `<span class='noto-emoji-coffee'> ${x.trim() == 'd' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA'}</span> <img src='coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
-        }).join()
-      }
-    "), html = TRUE),
+      cell = most_often,
+      html = TRUE
+    ),
     bitterness = colDef(
       name = "Bitterness <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>",
       style = \(x) list(fontWeight = 600),
