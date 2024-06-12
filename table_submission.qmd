@@ -2,8 +2,10 @@
 format: html
 ---
 
+<!-- Noto Emoji font -->
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
 
+<!-- Tippy JS library -->
 <script src='https://unpkg.com/popper.js@1'></script><script src='https://unpkg.com/tippy.js@5'></script><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" type="text/css" />
 
 ```{css}
@@ -23,15 +25,12 @@ format: html
   background-repeat: no-repeat;
 }
 
-/* KE
-BR, CR, SV, ET
-ET, ID
-CO */
-
-/*A: Kenya
-B: Brazil, Costa Rica, El Salvador, Ethiopia
-C: Ethiopia and Sumatra
-D: Colombia*/
+/*
+A: Kenya (KE)
+B: Brazil (BR), Costa Rica (CR), El Salvador (SV), Ethiopia (ET)
+C: Ethiopia (ET) and Sumatra (ID)
+D: Colombia CO
+*/
 
 .flag-size-m {
   width: 1rem;
@@ -240,8 +239,6 @@ color_pos_neg <- function(value) {
   list(fontWeight = 600, color = color)
 }
 ```
-
-<script>let playSound = (x) => new Audio(x).play()</script>
 
 ```{r}
 #| column: screen-inset
