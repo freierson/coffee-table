@@ -1,38 +1,10 @@
 ---
-title: "Coffee Table"
-subtitle: "Unlocking Coffee's Secrets: Exploring Flavour Notes in James Hoffman's Large Scale Blind Taste Test"
-title-block-banner: banner.avif
+format: html
 ---
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
 
-<!-- <img src="" class = "banner-img page-full"/>  -->
-
-James Hoffman, a coffee expert and YouTuber ran a blind coffee taste test in October of 2023 that involved participants receiving coffee taste kits. The same kind of kenyan coffee bean was given at three levels of roast, light <img src="docs/coffee-bean-filled-roast-brew.svg" class="bean-often a_prop" alt="coffe bean"> medium <img src="docs/coffee-bean-filled-roast-brew.svg" class="bean-often b_prop" alt="coffe bean">, and dark <img src="docs/coffee-bean-filled-roast-brew.svg" class="bean-often c_prop" alt="coffe bean">. There was also a columbian coffee bean <img src="docs/coffee-bean-filled-roast-brew.svg" class="bean-often d_prop" alt="coffe bean"> that went through a natural fermentation process. People were asked to record flavour notes for each coffee, rate them on bitterness (1-5), acidity (1-5), and general enjoyment (1-5). Our table aims to highlight what type of coffee each flavour note typically describes. To understand the table better, expand a flavour note to learn about it.
-
-<!-- <span class = "credits">Image courtesy of [unsplash.com](https://unsplash.com/photos/coffee-bean-lot-TD4DBagg2wE) </span> -->
-
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-library(tidyverse)
-library(reactable)
-library(reactablefmtr)
-library(htmltools)
-```
-
 <script src='https://unpkg.com/popper.js@1'></script><script src='https://unpkg.com/tippy.js@5'></script><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" type="text/css" />
-
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-table_data <- read_csv("table_data.csv") |>
-  rename(n = N, a_prop = a, b_prop = b, c_prop = c, d_prop = d) |>
-  select(-p.value)
-```
-
 
 ```{css}
 #| echo: false 
@@ -56,14 +28,20 @@ BR, CR, SV, ET
 ET, ID
 CO */
 
+/*A: Kenya
+B: Brazil, Costa Rica, El Salvador, Ethiopia
+C: Ethiopia and Sumatra
+D: Colombia*/
+
 .flag-size-m {
   width: 1rem;
   height: 1rem;
+  bottom: 0rem;
 }
 
 .flag-size-l {
-  width: 2rem;
-  height: 2rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .round-flag-bean-b {
@@ -100,7 +78,8 @@ audio {
 }
 
 .bean-often {
-  width: 1em;
+  width: 1.25em;
+  transform: translate(0,-15%);
 }
 
 .grouped-header {
@@ -186,17 +165,25 @@ var get_bean_icon = function(label, size) {
 }
 
 var bean_header_fn = function(cellInfo, tableState) {
-  // const flag = cellInfo.id == 'd_prop' ? '&#x1F1E8;&#x1F1F4' : '&#x1F1F0;&#x1F1EA';
-  const country_label = cellInfo.id == 'd_prop' ? 'Columbia' : 'Kenya';
+  if(cellInfo.id == 'a_prop') {
+    country_label = 'Kenyan origin';
+  } else if(cellInfo.id == 'b_prop') {
+    country_label = 'Blend from Brazil, Costa Rica, El Salvador, and Ethiopia';
+  } else if(cellInfo.id == 'c_prop') {
+    country_label = 'Blend from Ethiopia and Sumatra';
+  } else {
+    country_label = 'Colombian origin';
+  }
+  
   var flag = get_bean_icon(cellInfo.id.substr(0,1), "l")
   if(cellInfo.id == 'd_prop') {
-    roast_label = 'Columbian fermented bean';
+    roast_label = 'Fermented';
   } else if(cellInfo.id == 'c_prop') {
-    roast_label = 'Kenyan Dark roasted beans'
+    roast_label = 'Dark roast'
   } else if(cellInfo.id == 'b_prop') {
-    roast_label = 'Kenyan Medium roasted beans'
+    roast_label = 'Medium roast'
   } else {
-    roast_label = 'Kenyan Light roasted beans'
+    roast_label = 'Light roast'
   }
 
   if (document.querySelectorAll('[data-tippy-content]').length > 0) {
@@ -226,22 +213,17 @@ var most_often_fn = function(cellInfo, tableState) {
 #| echo: false
 #| message: false
 #| warning: false
-
+library(tidyverse)
+library(reactable)
+library(reactablefmtr)
+library(htmltools)
+table_data <- read_csv("table_data.csv") |>
+  rename(n = N, a_prop = a, b_prop = b, c_prop = c, d_prop = d) |>
+  select(-p.value)
 bean_header <- JS("(cellInfo, tableState) => bean_header_fn(cellInfo, tableState)")
-
 up_down_arrow <- JS("(cellInfo, tableState) => up_down_arrow_fn(cellInfo, tableState)")
-
 thumbs_up_down <- JS("(cellInfo, tableState) => thumbs_up_down_fn(cellInfo, tableState)")
-
 most_often <- JS("(cellInfo, tableState) => most_often_fn(cellInfo, tableState)")
-```
-
-
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-
 bean_cell_bars <- data_bars(
   data = table_data,
   text_position = "above",
@@ -249,21 +231,14 @@ bean_cell_bars <- data_bars(
   fill_color = "#804A26",
   number_fmt = scales::label_percent(accuracy = 0.1)
 )
-```
-
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-
 color_pos_neg <- function(value) {
-        color <- if (value > 0) {
-          "#008000"
-        } else if (value <= 0) {
-          "#e00000"
-        }
-        list(fontWeight = 600, color = color)
-      }
+  color <- if (value > 0) {
+    "#008000"
+  } else if (value <= 0) {
+    "#e00000"
+  }
+  list(fontWeight = 600, color = color)
+}
 ```
 
 <script>let playSound = (x) => new Audio(x).play()</script>
@@ -286,10 +261,6 @@ reactable(
           class = "card",
           div(span(table_data$note[index], style = "font-size: 2em;")),
           p(table_data$description[index]),
-          # span("  🔊",
-          #   style = "font-size: 1.2em; cursor: pointer", 
-          #   onclick = glue::glue("playSound('text-to-speech/{table_data$note[index]}.mp3')")
-          # )
           span(style="display:flex; flex-direction: row; justify-content: center;", 
             tag("audio", list(controls=TRUE, controlsList="nodownload", src=glue::glue("text-to-speech/{table_data$note[index]}.mp3")))
           )
@@ -321,26 +292,26 @@ reactable(
       cell = bean_cell_bars
     ),
     most_often = colDef(
-      name = "Best describes <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>", format = colFormat(digits = 2),
+      name = "Best describes <i class='fa-regular fa-circle-question' data-tippy-content='The coffee people were usually describing when this note was used. Multiple coffees are listed when the difference between them is not statistically significant.'></i>", format = colFormat(digits = 2),
       width = 130,
       cell = most_often,
       html = TRUE
     ),
     bitterness = colDef(
-      name = "Bitterness <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>",
+      name = "Bitterness <i class='fa-regular fa-circle-question' data-tippy-content='Positive (negative) numbers indicate people used this note to describe a coffee they found bitter (not bitter).'></i>",
       style = \(x) list(fontWeight = 600),
       cell = up_down_arrow,
       html = TRUE
     ),
     acidity = colDef(
-      name = "Acidity <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>",
+      name = "Acidity <i class='fa-regular fa-circle-question' data-tippy-content='Positive (negative) numbers indicate people used this note to describe a coffee they found acidic (not acidic).'></i>",
       style = \(x) list(fontWeight = 600),
       cell = up_down_arrow,
       html = TRUE
     ),
-    mentioned_with = colDef(name = "Complimentary note <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>", width = 150, html = TRUE),
+    mentioned_with = colDef(name = "Complimentary note <i class='fa-regular fa-circle-question' data-tippy-content='This note often appears with the flavour note in the first column.'></i>", width = 150, html = TRUE),
     sentiment = colDef(
-      name = "Sentiment <i class='fa-regular fa-circle-question' data-tippy-content='How much do people prefer this note?'></i>",
+      name = "Sentiment <i class='fa-regular fa-circle-question' data-tippy-content='Positive (negative) numbers indicate people used this note to describe a coffee they liked (disliked).'></i>",
       format = colFormat(digits = 2),
       style = color_pos_neg,
       cell = thumbs_up_down,
