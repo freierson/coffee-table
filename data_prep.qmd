@@ -114,14 +114,6 @@ mentioned_with <- inner_join(notes |>
 ```
 
 ```{r}
-avg_expertise <- notes |>
-  group_by(note) |>
-  drop_na(expertise, coffee) |>
-  summarise(avg_expertise = mean(expertise, na.rm = T), .groups='drop') |>
-  arrange(avg_expertise)
-```
-
-```{r}
 overall_means <- coffee |>
   select(submission_number, contains('bitterness'), contains('acidity'), contains('preference')) |>
   pivot_longer(-1) |>
@@ -173,7 +165,6 @@ table_data <- prop_table |>
   left_join(most_often, by = join_by(note)) |>
   left_join(mentioned_with, by = join_by(note)) |>
   left_join(note_associations, by = join_by(note)) |>
-  left_join(avg_expertise, by = join_by(note)) |>
   select(-ends_with('_n')) |>
   mutate(
     most_often1 = case_when(
