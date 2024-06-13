@@ -1,12 +1,13 @@
 ---
 format: html
+output-file: index.html
 ---
 
 <!-- Noto Emoji font -->
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
 
 <!-- Tippy JS library -->
-<script src='https://unpkg.com/popper.js@1'></script><script src='https://unpkg.com/tippy.js@5'></script><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" type="text/css" />
+<script src='https://unpkg.com/popper.js@1'></script><script src='https://unpkg.com/tippy.js@5'></script>
 
 ```{css}
 #| echo: false 
@@ -189,7 +190,7 @@ var bean_header_fn = function(cellInfo, tableState) {
     tippy('[data-tippy-content]')
   }
 
-  return `<div class = 'bean-header-container'><span class = 'bean-header-flag noto-emoji-coffee' data-tippy-content = '${country_label}'>${flag}</span><img src='docs/coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
+  return `<div class = 'bean-header-container'><span class = 'bean-header-flag noto-emoji-coffee' data-tippy-content = '${country_label}'>${flag}</span><img src='coffee-bean-filled-roast-brew.svg' data-tippy-content='${roast_label}' class='bean-header ${cellInfo.id}' alt = 'coffee bean'/></div>`
 }
 
 var up_down_arrow_fn = function(cellInfo, tableState) {
@@ -203,7 +204,7 @@ var thumbs_up_down_fn = function(cellInfo, tableState) {
 var most_often_fn = function(cellInfo, tableState) {
   return cellInfo.value.split(',').map(x => {
       flag = get_bean_icon(x.trim(), "m");
-      return `<span class='noto-emoji-coffee'> ${flag}</span> <img src='docs/coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
+      return `<span class='noto-emoji-coffee'> ${flag}</span> <img src='coffee-bean-filled-roast-brew.svg' class='bean-often ${x}_prop' alt = 'coffe bean'/>`
     }).join()
 }
 ```
@@ -289,26 +290,26 @@ reactable(
       cell = bean_cell_bars
     ),
     most_often = colDef(
-      name = "Best describes <i class='fa-regular fa-circle-question' data-tippy-content='The coffee people were usually describing when this note was used. Multiple coffees are listed when the difference between them is not statistically significant.'></i>", format = colFormat(digits = 2),
+      name = "<span data-tippy-content='The coffee people were usually describing when this note was used. Multiple coffees are listed when the difference between them is not statistically significant.'>Best describes </span>", format = colFormat(digits = 2),
       width = 130,
       cell = most_often,
       html = TRUE
     ),
     bitterness = colDef(
-      name = "Bitterness <i class='fa-regular fa-circle-question' data-tippy-content='Positive (negative) numbers indicate people used this note to describe a coffee they found bitter (not bitter).'></i>",
+      name = "<span data-tippy-content='Positive (negative) numbers indicate people used this note to describe a coffee they found bitter (not bitter).'>Bitterness </span>",
       style = \(x) list(fontWeight = 600),
       cell = up_down_arrow,
       html = TRUE
     ),
     acidity = colDef(
-      name = "Acidity <i class='fa-regular fa-circle-question' data-tippy-content='Positive (negative) numbers indicate people used this note to describe a coffee they found acidic (not acidic).'></i>",
+      name = "<span data-tippy-content='Positive (negative) numbers indicate people used this note to describe a coffee they found acidic (not acidic).'>Acidity </span>",
       style = \(x) list(fontWeight = 600),
       cell = up_down_arrow,
       html = TRUE
     ),
-    mentioned_with = colDef(name = "Complimentary note <i class='fa-regular fa-circle-question' data-tippy-content='This note often appears with the flavour note in the first column.'></i>", width = 150, html = TRUE),
+    mentioned_with = colDef(name = "<span data-tippy-content='This note often appears with the flavour note in the first column.'>Complimentary note </span>", width = 150, html = TRUE),
     sentiment = colDef(
-      name = "Sentiment <i class='fa-regular fa-circle-question' data-tippy-content='Positive (negative) numbers indicate people used this note to describe a coffee they liked (disliked).'></i>",
+      name = "<span data-tippy-content='Positive (negative) numbers indicate people used this note to describe a coffee they liked (disliked).'>Sentiment </span>",
       format = colFormat(digits = 2),
       style = color_pos_neg,
       cell = thumbs_up_down,

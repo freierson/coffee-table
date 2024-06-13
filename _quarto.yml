@@ -1,0 +1,4 @@
+project:
+  output-dir: docs
+  render: 
+    - table_submission.qmd
