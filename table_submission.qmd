@@ -268,7 +268,6 @@ reactable(
   },
   columns = list(
     note = colDef(name = "Coffee flavour note"),
-    n = colDef(name = "Occurences", format = colFormat(digits = 0), width = 120),
     a_prop = colDef(
       header = bean_header, 
       cell = bean_cell_bars,
